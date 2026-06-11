@@ -64,7 +64,8 @@ def get_ltp(kite, exchange, tradingsymbol):
         return None
 
 
-def square_off_position(kite, position, order_type="MARKET", trigger_price=None):
+def square_off_position(kite, position, order_type="MARKET", price=None,
+                        trigger_price=None):
     """Place an opposite order to flatten a position (works long or short)."""
     qty = position["quantity"]
     if qty == 0:
@@ -80,9 +81,20 @@ def square_off_position(kite, position, order_type="MARKET", trigger_price=None)
         order_type=order_type,
         product=position["product"],
     )
+    if price is not None:
+        params["price"] = price
     if trigger_price is not None:
         params["trigger_price"] = trigger_price
     return place_order(kite, **params)
+
+
+def get_open_positions(kite):
+    """Return positions you actually hold right now (quantity != 0)."""
+    try:
+        return [p for p in kite.positions()["net"] if p["quantity"] != 0]
+    except Exception as e:
+        log(f"Could not fetch positions: {e}", level="error")
+        return []
 
 
 def place_disciplined_order(kite, balance, quantity, price, **params):
