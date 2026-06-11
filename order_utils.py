@@ -8,6 +8,10 @@ is logged instead, so you can watch the engine make decisions safely.
 import config
 from logger import log
 
+# Statuses for orders that are still live in the book and can be cancelled.
+# "OPEN" also covers partially-filled orders (their unfilled remainder).
+OPEN_ORDER_STATUSES = ("OPEN", "TRIGGER PENDING", "AMO REQ RECEIVED")
+
 
 def place_order(kite, **params):
     """Place an order, respecting the DRY_RUN safety switch."""
@@ -20,6 +24,29 @@ def place_order(kite, **params):
         return order_id
     except Exception as e:
         log(f"ORDER FAILED: {e} -> {params}", level="error")
+        return None
+
+
+def get_open_orders(kite):
+    """Return orders still live in the book (pending / not fully filled)."""
+    try:
+        return [o for o in kite.orders() if o["status"] in OPEN_ORDER_STATUSES]
+    except Exception as e:
+        log(f"Could not fetch orders: {e}", level="error")
+        return []
+
+
+def cancel_order(kite, variety, order_id):
+    """Cancel a pending order, respecting the DRY_RUN safety switch."""
+    if config.DRY_RUN:
+        log(f"[DRY_RUN] Would cancel order -> {order_id} ({variety})")
+        return None
+    try:
+        kite.cancel_order(variety=variety, order_id=order_id)
+        log(f"ORDER CANCELLED ({order_id})")
+        return order_id
+    except Exception as e:
+        log(f"CANCEL FAILED: {e} -> {order_id}", level="error")
         return None
 
 
