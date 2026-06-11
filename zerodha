@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# One command to run everything. From the project folder just type:
+#
+#     ./zerodha
+#
+# It activates the virtual environment for you and opens the menu.
+cd "$(dirname "$0")" || exit 1
+if [ -d .venv ]; then
+    # shellcheck disable=SC1091
+    source .venv/bin/activate
+fi
+exec python menu.py "$@"
