@@ -60,13 +60,13 @@ def main():
 
     kite = get_kite()
 
-    schedule.every(config.MONITOR_INTERVAL_MINUTES).minutes.do(monitor_cycle, kite=kite)
+    schedule.every(config.MONITOR_INTERVAL_SECONDS).seconds.do(monitor_cycle, kite=kite)
 
     square_off_at = f"{config.SQUARE_OFF_HOUR:02d}:{config.SQUARE_OFF_MINUTE:02d}"
     schedule.every().day.at(square_off_at).do(overnight_cycle, kite=kite)
 
     log(
-        f"Scheduled: risk sweep every {config.MONITOR_INTERVAL_MINUTES} min, "
+        f"Scheduled: risk sweep every {config.MONITOR_INTERVAL_SECONDS} sec, "
         f"square-off at {square_off_at}."
     )
 

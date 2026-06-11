@@ -24,10 +24,21 @@ from logger import log
 from order_utils import get_ltp, place_disciplined_order
 
 
-def ask(prompt, options=None, default=None):
-    """Ask a question; optionally restrict to a set of options."""
+def ask(prompt, options=None, default=None, shortcuts=None):
+    """Ask a question; optionally restrict to a set of options.
+
+    `shortcuts` maps a single letter to a full option (e.g. {"B": "BUY"}), so
+    you can type just the letter instead of the whole word. The full word still
+    works too. Everything is case-insensitive and the answer is returned upper.
+    """
+    shortcuts = {k.upper(): v.upper() for k, v in (shortcuts or {}).items()}
     while True:
-        suffix = f" [{'/'.join(options)}]" if options else ""
+        if shortcuts:
+            suffix = " [" + " / ".join(f"{k}={v}" for k, v in shortcuts.items()) + "]"
+        elif options:
+            suffix = f" [{'/'.join(options)}]"
+        else:
+            suffix = ""
         if default:
             suffix += f" (default {default})"
         answer = input(f"{prompt}{suffix}: ").strip()
@@ -36,7 +47,8 @@ def ask(prompt, options=None, default=None):
         if not answer:
             print("  Please enter a value.")
             continue
-        if options and answer.upper() not in [o.upper() for o in options]:
+        answer = shortcuts.get(answer.upper(), answer.upper())
+        if options and answer not in [o.upper() for o in options]:
             print(f"  Please choose one of: {', '.join(options)}")
             continue
         return answer
@@ -84,12 +96,15 @@ def main():
 
     kite = get_kite()
 
-    transaction_type = ask("Buy or Sell?", options=["BUY", "SELL"]).upper()
+    transaction_type = ask("Buy or Sell?", options=["BUY", "SELL"],
+                           shortcuts={"B": "BUY", "S": "SELL"})
     exchange = ask("Exchange?", options=["NSE", "NFO", "BSE", "CDS", "MCX"],
-                   default="NSE").upper()
+                   default="NSE",
+                   shortcuts={"N": "NSE", "F": "NFO", "B": "BSE", "C": "CDS", "M": "MCX"})
     tradingsymbol = ask("Trading symbol (e.g. RELIANCE or BANKNIFTY25MAY56000CE)").upper()
     quantity = ask_int("Quantity")
-    order_type = ask("Order type?", options=["MARKET", "LIMIT"], default="MARKET").upper()
+    order_type = ask("Order type?", options=["MARKET", "LIMIT"], default="MARKET",
+                     shortcuts={"M": "MARKET", "L": "LIMIT"})
 
     price = 0.0
     if order_type == "LIMIT":
@@ -102,7 +117,8 @@ def main():
             print("  Could not fetch live price; please enter it for the size check.")
             check_price = ask_float("Approx current price")
 
-    product = ask("Product?", options=["MIS", "CNC", "NRML"], default="MIS").upper()
+    product = ask("Product?", options=["MIS", "CNC", "NRML"], default="MIS",
+                  shortcuts={"M": "MIS", "C": "CNC", "N": "NRML"})
 
     balance = get_available_balance(kite)
     est_value = quantity * check_price
@@ -120,7 +136,8 @@ def main():
           f"= {balance * config.MAX_CAPITAL_PER_TRADE_PERCENT / 100:,.2f}")
     print("-" * 55)
 
-    confirm = ask("Place this order?", options=["YES", "NO"], default="NO").upper()
+    confirm = ask("Place this order?", options=["YES", "NO"], default="NO",
+                  shortcuts={"Y": "YES", "N": "NO"})
     if confirm != "YES":
         print("Cancelled. Nothing was sent.")
         return

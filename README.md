@@ -103,7 +103,7 @@ MAX_TRADES_PER_DAY=5
 | `TRAIL_START_PERCENT` | Start trailing once a trade is up this % | `2` |
 | `TRAIL_SL_MOVE_PERCENT` | Keep the trailing stop this % below price | `0.5` |
 | `SQUARE_OFF_HOUR` / `SQUARE_OFF_MINUTE` | Time to close everything (24-hour clock) | `15` / `15` |
-| `MONITOR_INTERVAL_MINUTES` | How often it checks (leave at 1) | `1` |
+| `MONITOR_INTERVAL_SECONDS` | How often it checks, in **seconds** (lower = more often; don't go below ~5) | `30` |
 
 **Important typing rules:**
 - No spaces around the `=`. Correct: `MAX_TRADES_PER_DAY=5`

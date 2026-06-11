@@ -57,8 +57,8 @@ DEFAULT_SL_PERCENT = _get_float("DEFAULT_SL_PERCENT", 10)
 SQUARE_OFF_HOUR = _get_int("SQUARE_OFF_HOUR", 15)
 SQUARE_OFF_MINUTE = _get_int("SQUARE_OFF_MINUTE", 15)
 
-# --- Monitoring cadence ---
-MONITOR_INTERVAL_MINUTES = _get_int("MONITOR_INTERVAL_MINUTES", 1)
+# --- Monitoring cadence (how often the risk sweep runs, in SECONDS) ---
+MONITOR_INTERVAL_SECONDS = _get_int("MONITOR_INTERVAL_SECONDS", 30)
 
 # --- SAFETY SWITCH ---------------------------------------------------------
 # When True, NO real orders are sent -- every action is only logged.
